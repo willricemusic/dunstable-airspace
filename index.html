@@ -1,0 +1,765 @@
+<html>
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <style>
+        .vertical-input-group .input-group:first-child {
+            padding-bottom: 0;
+        }
+        .vertical-input-group .input-group:first-child * {
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;    
+        }
+        .vertical-input-group .input-group:last-child {
+            padding-top: 0;
+        }
+        .vertical-input-group .input-group:last-child * {
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+        }
+        .vertical-input-group .input-group:not(:last-child):not(:first-child) {
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+        .vertical-input-group .input-group:not(:last-child):not(:first-child) * {
+            border-radius: 0;
+        }  
+        .vertical-input-group .input-group:not(:first-child) * {
+            border-top: 0;
+        }
+    </style>
+</head>
+<body>
+<div class="container p-3" style="max-width: 600px;">
+    <section class="container p-3">
+        <h1>Dunstable HPC Airspace Generator</h1>
+        <p style="font-style: italic;">Last updated: 2023-11-23</p>
+    </section>
+
+    <section class="container p-3" style="background: lightyellow;">
+        <h3>1. Attend airspace briefing!</h3>
+        <p>A <a href="https://dunstablehpc.com/#airspace" target="blank">DHPC airspace briefing</a> is <strong>mandatory</strong> before you fly in LGC & DHPC's sensitive <a href="https://www.dunstablehpc.com/downloads/DHPC-NewAirspaceBrief-2023.pdf" target="blank">letter of agreement (LOA) airspace</a>. No airspace briefing sticker, no flying, no exceptions.</p>
+        <p class="mb-0"> Additionally, before flying in DGA1, it must first have been opened by LGC (on Telegram) and you must be <a href="https://docs.google.com/forms/d/e/1FAIpQLSfNYCsuiwCmmgl7KoClvaMJeL0N1LqSaB6vq-lljqnRIkeqOg/viewform">signed-in!</a></p>
+    </section>
+
+    <section class="container p-3 mt-3">
+        <h3>2. Open an <a href="https://asselect.uk" target=blank>asselect.uk</a> airspace file: </h3>
+        <div style="font-style: italic;" class="mb-2">Leave both Dunstable Local Agreement checkboxes unticked in asselect.</div>
+        <input type="file" class="form-control" id="upload">
+    </section>
+
+    <section id="options-container" class="container p-3">
+        <h3>3. Select options:</h3>
+
+        <div class="vertical-input-group mb-4 mt-3">
+            <div class="input-group">
+                <span class="input-group-text">Insert</span>
+
+                <select class="form-select" name="dhpc-loa-selection" id="dhpc-loa-selection">
+                    <option value="CRSA">CRSA</option>
+                    <option value="CRSA+DGA1">CRSA + DGA1</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <span class="input-group-text">encoded as</span>
+
+                <select class="form-select" name="dhpc-loa-class" id="dhpc-loa-class">
+                    <option value="off">empty airspace</option>
+                    <option value="GSEC">Gliding Sector (GSEC)</option>
+                    <option value="G" selected>Class G</option>
+                    <option value="D">Class D</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="vertical-input-group">
+            <div class="input-group">
+                <span class="input-group-text" style="width:100%">Whipsnade Zoo</span>
+            </div>
+            <div class="input-group">
+                <select class="form-select" name="zoo-class" id="zoo-class">
+                    <option value="off">not included</option>
+                    <option value="Q">Danger (Q)</option>
+                    <option value="P" selected>Prohibited (P)</option>
+                    <option value="B">Altitude Overlay (Class B)</option>
+                </select>
+            </div>
+            <div class="input-group mb-4">
+                <span class="input-group-text">from SFC to</span>
+                <input type="text" value="100" class="form-control" id="zoo-altitude">
+                <span class="input-group-text">ft</span>
+                <select class="form-select"name="yellow-area-lower-altitude-reference" id="zoo-altitude-reference">
+                    <option value="AGL">AGL</option>
+                    <option value="AMSL">AMSL</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="vertical-input-group">
+            <div class="input-group">
+                <span class="input-group-text" style="background-color: #edfce9; width:100%">LGC main field ("Green Area")</span>
+            </div>
+            <div class="input-group mb-1">
+                <select class="form-select"name="green-area-class" id="green-area-class">
+                    <option value="off">not included</option>
+                    <option value="P">Prohibited (P)</option>
+                    <option value="Q">Danger (Q)</option>
+                    <option value="R">Restricted (R)</option>
+                    <option value="D">Class D</option>
+                    <option value="B">Altitude Overlay (Class B)</option> 
+                </select>
+                <span class="input-group-text">SFC to 2500ft AMSL</span>
+            </div>
+        </div>
+
+        <div class="vertical-input-group">
+            <div class="input-group">
+                <span class="input-group-text" style="background-color: #fcf2e9; width:100%">LGC HG/PG exclusion ("Orange Area")</span>
+            </div>
+            <div class="input-group mb-1">
+                <select class="form-select"name="orange-area-class" id="orange-area-class">
+                    <option value="off">not included</option>
+                    <option value="P">Prohibited (P)</option>
+                    <option value="Q">Danger (Q)</option>
+                    <option value="R">Restricted (R)</option>
+                    <option value="D">Class D</option>
+                    <option value="B">Altitude Overlay (Class B)</option> 
+                </select>
+                <span class="input-group-text">SFC to 800ft AMSL</span>
+            </div>
+        </div>
+
+        <div class="vertical-input-group">
+            <div class="input-group">
+                <span class="input-group-text" style="background-color: lightyellow; width:100%">LGC fields over BL ("Yellow Area")</span>
+            </div>
+            <div class="input-group">
+                <select class="form-select"name="yellow-area-class" id="yellow-area-class">
+                    <option value="off">not included</option>
+                    <option value="Q">Danger (Q)</option>
+                    <option value="R">Restricted (R)</option>
+                    <option value="SRZ">Special Rules Zone (SRZ)</option>
+                    <option value="GSEC">Gliding Sector (GSEC)</option>
+                    <option value="G">Class G</option>
+                    <option value="B">Altitude Overlay (Class B)</option> 
+                </select>
+            </div>
+            <div class="input-group mb-3">
+                <span class="input-group-text">from</span>
+                <input type="text" value="100" class="form-control" id="yellow-area-lower-altitude">
+                <span class="input-group-text">ft</span>
+                <select class="form-select"name="yellow-area-lower-altitude-reference" id="yellow-area-lower-altitude-reference">
+                    <option value="AGL">AGL</option>
+                    <option value="AMSL">AMSL</option>
+                </select>
+                <span class="input-group-text">to 1300ft AMSL</span>
+            </div>
+        </div>
+
+    </section>
+
+    <section class="container p-3" style="background: lightyellow">
+        <h3>4. Download modified airspace file</h3>
+
+        <p><strong>This page is in beta. Please assume that the airspace file generated is wrong, corrupt, out of date, not what you were expecting, or contains mistakes. </strong>Check and double-check the resultant file using a text editor and your instrument, comparing with a known good reference and report all errors to <a href="https://t.me/willrice" target="blank">@willrice</a> on Telegram including details of the browser used and steps to recreate the issue.</p>
+        <p>It is the pilot's responsibility alone to ensure that their instrument configuration and knowledge will enable them to avoid controlled airspace at all times!</p>
+        <p><strong>All responsibility and liability for any outcome relating to use of this website lies with the pilot alone.</strong></p>
+
+        <button id="download" class="btn btn-lg btn-primary">Download Modified Airspace File</button>
+    </section>
+
+    <section class="container p-3 mt-3">
+        <h3>5. Check and double-check the file in a text editor & on your instrument!</h3>
+    </section>
+
+    
+</div>
+
+<script>
+// =======================================================
+//
+// BEGIN: File-chooser & download button
+
+var fileInput = document.getElementById('upload');
+var outputFileName = 'DHPC-LOA.txt';
+var inputFileData = '';
+
+const openFile = () => {
+    const selectedFile = fileInput.files[0];
+    inputFileName = selectedFile.name;
+    outputFileName = inputFileName.substring(0, inputFileName.lastIndexOf('.')) + '-DHPC-LOA.txt';
+
+    var fileReader = new FileReader();
+    fileReader.onload = function(fileLoadedEvent){
+
+        inputFileData = fileLoadedEvent.target.result;
+
+        var abort = false;
+
+        asToMatch.forEach(function (as) {
+            const before = inputFileData;
+            inputFileData = inputFileData.replace(as, commentOut(as));
+            if (inputFileData == before) {abort = true}; // no replacement performed - expected airspace definition is missing!
+        });
+
+        if (abort) {abortLoadingFile();}
+
+    };
+
+    fileReader.readAsText(selectedFile, "UTF-8");
+};
+
+fileInput.addEventListener('change', openFile);
+
+function abortLoadingFile() {
+    outputFileName = 'DHPC-LOA.txt';
+    inputFileData = '';
+    fileInput.value = '';
+    // document.body.style.background = '#ffeeee';
+    alert("The selected file did not contain Luton CTA & CTR airspace in the expected format. ABORTING!");
+}
+
+function commentOut(as) {
+    const lines = as.split('\n');
+    const commentHeaderFooter = '*   =======================================================\n' +
+                                '*   == REPLACED WITH DHPC LOA AIRSPACE (SEE END OF FILE) ==\n' +
+                                '*   =======================================================';
+    
+    commentedAs = commentHeaderFooter + '\n';
+
+    lines.forEach(function (line) {
+        commentedAs += '*   ' + line + '\n';
+    });
+
+    commentedAs += commentHeaderFooter;
+
+    return commentedAs;
+}
+
+const downloadButton = document.getElementById('download');
+
+const downloadFile = () => {
+    airspaceData = inputFileData;
+    airspaceData += asTemplateHeader;
+    airspaceData += getAirspaceCrsa();
+    airspaceData += getAirspaceDga1();
+    airspaceData += getAirspaceLgc();
+    airspaceData += getAirspaceZoo();
+    airspaceData += getRemainingLutonAs();
+    airspaceData += asTemplateFooter;
+    download(airspaceData, 'text/plain', outputFileName);
+};
+
+downloadButton.addEventListener('click', downloadFile);
+
+function download(content, mimeType, filename) {
+  const a = document.createElement('a'); // Create "a" element
+  const blob = new Blob([content], {type: mimeType}); // Create a blob (file-like object)
+  const url = URL.createObjectURL(blob); // Create an object URL from blob
+  a.setAttribute('href', url); // Set "a" element link
+  a.setAttribute('download', filename); // Set download filename
+  a.click(); // Start downloading
+}
+
+// END: File-chooser & download button
+//
+// =======================================================
+//
+// BEGIN: Airspace processor
+
+
+
+// -------------------------------------------------------
+
+function getRemainingLutonAs() {
+    var remainingLutonAs = '';
+
+    if (!dga1Enabled()) { // CRSA only
+
+        remainingLutonAs += asLutonCtrMinusCrsa;
+        remainingLutonAs += asTemplateSeparator;
+        
+        remainingLutonAs += '*\n';
+        remainingLutonAs += '*   BEGIN: Luton CTA (not affected by CRSA)\n';
+        remainingLutonAs += '*\n';
+        remainingLutonAs += asMatchLutonCtaCheddington + '\n';
+        remainingLutonAs += '*\n';
+        remainingLutonAs += '*   END: Luton CTA (not affected by CRSA)\n';
+        remainingLutonAs += '*';
+
+        remainingLutonAs += asTemplateSeparator;
+
+    } else { // CRSA + DGA1
+
+        remainingLutonAs += asLutonCtrAndCtaMinusCrsaAndDga1;
+        remainingLutonAs += asTemplateSeparator;
+
+    }
+
+    return remainingLutonAs;
+}
+
+function getAirspaceCrsa() {
+    if (!crsaEnabled()) {return '';}
+    const ac = document.getElementById('dhpc-loa-class').value;
+    if (ac == 'off') {return '';}
+    return airspaceCrsa(ac) + asTemplateSeparator;
+}
+
+function airspaceCrsa(ac) {
+    newAs = asTemplateCrsa;
+    newAs = newAs.replaceAll('<CLASS>', ac);
+    return newAs;
+}
+
+function getAirspaceDga1() {
+    if (!dga1Enabled()) {return '';}
+    const ac = document.getElementById('dhpc-loa-class').value;
+    if (ac == 'off') {return '';}
+    return airspaceDga1(ac) + asTemplateSeparator;
+}
+
+function airspaceDga1(ac) {
+    newAs = asTemplateDga1;
+    newAs = newAs.replaceAll('<CLASS>', ac);
+    return newAs;
+}
+
+function getAirspaceLgc() {
+    if (!lgcEnabled()) {return '';}
+    as = '';
+    as += asTemplateLgcBegin;
+    as += getAirspaceGreenArea();
+    as += getAirspaceOrangeArea();
+    as += getAirspaceYellowArea();
+    as += asTemplateLgcEnd;
+    as += asTemplateSeparator;
+    return as;
+}
+
+function getAirspaceGreenArea() {
+    if (!greenAreaEnabled()) {return '';}
+    const ac = document.getElementById('green-area-class').value;
+    return airspaceGreenArea(ac) + asTemplateSeparatorSmall;
+}
+
+function airspaceGreenArea(ac) {
+    newAs = asTemplateLgcGreenArea;
+    newAs = newAs.replaceAll('<CLASS>', ac);
+    return newAs;
+}
+
+function getAirspaceOrangeArea() {
+    if (!orangeAreaEnabled()) {return '';}
+    const ac = document.getElementById('orange-area-class').value;
+    return airspaceOrangeArea(ac) + asTemplateSeparatorSmall;
+}
+
+function airspaceOrangeArea(ac) {
+    newAs = asTemplateLgcOrangeArea;
+    newAs = newAs.replaceAll('<CLASS>', ac);
+    return newAs;
+}
+
+function getAirspaceYellowArea() {
+    if (!yellowAreaEnabled()) {return '';}
+    const ac = document.getElementById('yellow-area-class').value;
+    const alAlt = document.getElementById('yellow-area-lower-altitude').value;
+    const alRef = document.getElementById('yellow-area-lower-altitude-reference').value;
+    return airspaceYellowArea(ac, alAlt, alRef) + asTemplateSeparatorSmall;
+}
+
+function airspaceYellowArea(ac, alAlt, alRef) {
+    newAs = asTemplateLgcYellowArea;
+    newAs = newAs.replaceAll('<CLASS>', ac);
+    newAs = newAs.replaceAll('<ALTITUDE-LOW>', alAlt);
+    newAs = newAs.replaceAll('<ALTITUDE-LOW-REFERENCE>', alRef);
+    return newAs;
+}
+
+function getAirspaceZoo() {
+    if (!zooEnabled()) {return '';}
+    const ac = document.getElementById('zoo-class').value;
+    const ahAlt = document.getElementById('zoo-altitude').value;
+    const ahRef = document.getElementById('zoo-altitude-reference').value;
+    return airspaceZoo(ac, ahAlt, ahRef) + asTemplateSeparator;
+}
+
+function airspaceZoo(ac, ahAlt, ahRef) {
+    newAs = asTemplateZoo;
+    newAs = newAs.replaceAll('<CLASS>', ac);
+    newAs = newAs.replaceAll('<ALTITUDE-HIGH>', ahAlt);
+    newAs = newAs.replaceAll('<ALTITUDE-HIGH-REFERENCE>', ahRef);
+    return newAs;
+}
+
+// -------------------------------------------------------
+
+function crsaEnabled() {
+    return true;
+}
+
+function dga1Enabled() {
+    return document.getElementById('dhpc-loa-selection').value == 'CRSA+DGA1';
+}
+
+function greenAreaEnabled() {
+    return document.getElementById('green-area-class').value != 'off';
+}
+
+function orangeAreaEnabled() {
+    return document.getElementById('orange-area-class').value != 'off';
+}
+
+function yellowAreaEnabled() {
+    return document.getElementById('yellow-area-class').value != 'off';
+}
+
+function lgcEnabled() {
+    return greenAreaEnabled() || orangeAreaEnabled() || yellowAreaEnabled();
+}
+
+function zooEnabled() {
+    return document.getElementById('zoo-class').value != 'off';
+}
+
+// END: Airspace processor
+//
+// =======================================================
+//
+// BEGIN: Airspace template definitions
+
+const asTemplateCrsa =
+`*
+*   BEGIN: Chiltern Ridge Soaring Area
+*
+AC <CLASS>
+AN CRSA
+AL SFC
+AH 1500 FT AMSL
+DP 51:51:31 N  000:37:54 W
+DP 51:53:10 N  000:31:16 W
+DP 51:49:42 N  000:33:13 W
+DP 51:46:34 N  000:35:38 W
+DP 51:51:31 N  000:37:54 W
+*
+AC <CLASS>
+AN CRSA EXTENSION
+AL SFC
+AH 2500 FT AMSL
+DP 51:52:44 N  000:38:28 W
+DP 51:53:50 N  000:32:12 W
+DP 51:53:10 N  000:31:16 W
+DP 51:51:31 N  000:37:54 W
+DP 51:52:44 N  000:38:28 W
+*
+*   END: Chiltern Ridge Soaring Area
+*`;
+
+const asTemplateDga1 =
+`*
+*   BEGIN: Dunstable Gliding Area 1
+*
+AC <CLASS>
+AN DGA1
+AL SFC
+AH 3500 FT AMSL
+DP 51:52:27 N  000:40:06 W
+DP 51:55:11 N  000:24:26 W
+DP 51:52:40 N  000:27:04 W
+DP 51:51:33 N  000:33:27 W
+DP 51:51:35 N  000:37:30 W
+DP 51:51:14 N  000:39:38 W
+DP 51:52:27 N  000:40:06 W
+*
+*   END: Dunstable Gliding Area 1
+*`;
+
+const asTemplateLgcBegin =
+`*
+*   BEGIN: London Gliding Club (LGC)
+*\n`;
+
+const asTemplateLgcEnd =
+`*   END: London Gliding Club (LGC)
+*`;
+
+const asTemplateLgcGreenArea =
+`AC <CLASS>
+AN LGC GREEN AREA
+AL SFC
+AH 2500 FT AMSL
+DP 51:52:24 N  000:32:58 W
+DP 51:52:21 N  000:32:40 W
+DP 51:52:17 N  000:32:26 W
+DP 51:51:54 N  000:32:50 W
+DP 51:52:03 N  000:33:18 W
+DP 51:52:20 N  000:33:06 W`;
+
+const asTemplateLgcOrangeArea =
+`AC P
+AN LGC HGPG EXCLUSION ZONE
+AL SFC
+AH 800 FT AMSL
+DP 51:52:21 N  000:32:26 W
+DP 51:52:17 N  000:32:26 W
+DP 51:52:21 N  000:32:40 W
+DP 51:52:24 N  000:32:35 W`;
+
+const asTemplateLgcYellowArea =
+`AC <CLASS>
+AN LGC YELLOW AREA
+AL <ALTITUDE-LOW> FT <ALTITUDE-LOW-REFERENCE>
+AH 1300 FT AMSL
+DP 51:52:24 N  000:32:58 W
+DP 51:52:38 N  000:32:44 W
+DP 51:52:35 N  000:32:30 W
+DP 51:52:33 N  000:32:32 W
+DP 51:52:24 N  000:32:35 W
+DP 51:52:21 N  000:32:40 W
+*
+AC <CLASS>
+AN LGC YELLOW AREA OVER BL
+AL <ALTITUDE-LOW> FT <ALTITUDE-LOW-REFERENCE>
+AH 1300 FT AMSL
+DP 51:52:33 N  000:32:32 W
+DP 51:52:30 N  000:32:25 W
+DP 51:52:29 N  000:32:26 W
+DP 51:52:28 N  000:32:24 W
+DP 51:52:21 N  000:32:26 W
+DP 51:52:24 N  000:32:35 W
+*
+AC <CLASS>
+AN LGC YELLOW AREA OVER HGPG EXCLUSION
+AL 800 FT AMSL
+AH 1300 FT AMSL
+DP 51:52:21 N  000:32:26 W
+DP 51:52:17 N  000:32:26 W
+DP 51:52:21 N  000:32:40 W
+DP 51:52:24 N  000:32:35 W`;
+
+const asTemplateZoo = 
+`*
+*   BEGIN: Whipsnade Zoo
+*
+AC <CLASS>
+AN WHIPSNADE ZOO
+AL SFC
+AH <ALTITUDE-HIGH> FT <ALTITUDE-HIGH-REFERENCE>
+DP 51:51:30 N  000:33:26 W
+DP 51:51:27 N  000:33:12 W
+DP 51:51:24 N  000:33:08 W
+DP 51:51:24 N  000:33:03 W
+DP 51:51:17 N  000:32:58 W
+DP 51:51:10 N  000:32:56 W
+DP 51:51:01 N  000:32:38 W
+DP 51:50:53 N  000:32:22 W
+DP 51:50:54 N  000:32:15 W
+DP 51:50:56 N  000:32:11 W
+DP 51:50:55 N  000:32:01 W
+DP 51:50:51 N  000:31:55 W
+DP 51:50:43 N  000:31:46 W
+DP 51:50:37 N  000:31:53 W
+DP 51:50:28 N  000:31:55 W
+DP 51:50:30 N  000:32:06 W
+DP 51:50:25 N  000:32:10 W
+DP 51:50:21 N  000:32:12 W
+DP 51:50:15 N  000:32:19 W
+DP 51:50:20 N  000:32:27 W
+DP 51:50:25 N  000:32:36 W
+DP 51:50:32 N  000:32:44 W
+DP 51:50:32 N  000:32:46 W
+DP 51:50:28 N  000:32:50 W
+DP 51:50:23 N  000:32:47 W
+DP 51:50:20 N  000:32:52 W
+DP 51:50:12 N  000:32:51 W
+DP 51:50:11 N  000:32:57 W
+DP 51:50:13 N  000:32:57 W
+DP 51:50:16 N  000:33:01 W
+DP 51:50:13 N  000:33:02 W
+DP 51:50:11 N  000:33:11 W
+DP 51:50:15 N  000:33:13 W
+DP 51:50:21 N  000:33:16 W
+DP 51:50:24 N  000:33:18 W
+DP 51:50:28 N  000:33:19 W
+DP 51:50:28 N  000:33:16 W
+DP 51:50:40 N  000:33:18 W
+DP 51:50:48 N  000:33:25 W
+DP 51:50:56 N  000:33:22 W
+DP 51:51:08 N  000:33:12 W
+DP 51:51:19 N  000:33:17 W
+*
+*   END: Whipsnade Zoo
+*`;
+
+const asLutonCtrMinusCrsa =
+`*
+*   BEGIN: Luton CTR minus CRSA
+*
+* Luton CTR outside CRSA
+AC D
+AN LONDON LUTON CTR
+AL SFC
+AH 3500ALT
+DP 51:55:11 N 000:24:26 W
+DP 51:57:43 N 000:21:45 W
+DP 51:58:57 N 000:14:34 W
+V D=+
+V X=51:52:29 N 000:22:06 W
+DB 51:58:57 N 000:14:34 W, 51:50:42 N 000:09:31 W
+DP 51:48:30 N 000:15:06 W
+DP 51:45:03 N 000:34:57 W
+DP 51:46:34 N 000:35:38 W 
+DP 51:49:42 N 000:33:13 W
+DP 51:53:10 N 000:31:16 W
+DP 51:53:50 N 000:32:12 W
+*
+* Luton CTR above CRSA
+AC D
+AN LONDON LUTON CTR
+AL 1500 FT AMSL
+AH 3500ALT
+DP 51:51:31 N  000:37:54 W
+DP 51:53:10 N  000:31:16 W
+DP 51:49:42 N  000:33:13 W
+DP 51:46:34 N  000:35:38 W
+DP 51:51:31 N  000:37:54 W
+*
+* Luton CTR above CRSA Extension
+AC D
+AN LONDON LUTON CTR
+AL 2500 FT AMSL
+AH 3500ALT
+DP 51:52:44 N  000:38:28 W
+DP 51:53:50 N  000:32:12 W
+DP 51:53:10 N  000:31:16 W
+DP 51:51:31 N  000:37:54 W
+DP 51:52:44 N  000:38:28 W
+*
+*   END: Luton CTR minus CRSA
+*`;
+
+const asLutonCtrAndCtaMinusCrsaAndDga1 =
+`*
+*   BEGIN: Luton CTR outside CRSA & DGA1
+*
+* Luton CTR outside CRSA & DGA1
+AC D
+AN LONDON LUTON CTR
+AL SFC
+AH 3500ALT
+DP 51:55:11 N 000:24:26 W
+DP 51:57:43 N 000:21:45 W
+DP 51:58:57 N 000:14:34 W
+V D=+
+V X=51:52:29 N 000:22:06 W
+DB 51:58:57 N 000:14:34 W, 51:50:42 N 000:09:31 W
+DP 51:48:30 N 000:15:06 W
+DP 51:45:03 N 000:34:57 W
+DP 51:46:34 N 000:35:38 W 
+DP 51:49:42 N 000:33:13 W
+DP 51:51:48 N 000:32:03 W
+DP 51:52:40 N 000:27:04 W
+*
+* Luton CTR over CRSA and outside DGA1
+AC D
+AN LONDON LUTON CTR
+AL 1500 FT AMSL
+AH 3500ALT
+DP 51:51:31 N  000:37:54 W
+DP 51:51:35 N  000:37:30 W
+DP 51:51:33 N  000:33:27 W
+DP 51:51:48 N  000:32:03 W
+DP 51:49:42 N  000:33:13 W
+DP 51:46:34 N  000:35:38 W
+DP 51:51:31 N  000:37:54 W
+*
+*   END: Luton CTR outside CRSA & DGA1
+*
+*   =======================================================
+*
+*   Begin: Luton CTA outside CRSA & DGA1
+*
+* Luton CTA over Cheddington outside DGA1
+AC D
+AN LONDON LUTON CTA
+AL 2500ALT
+AH 5500ALT
+DP 51:48:10 N 000:41:55 W
+DP 51:51:50 N 000:43:36 W
+DP 51:52:27 N 000:40:06 W
+DP 51:51:14 N 000:39:38 W
+DP 51:51:31 N 000:37:54 W
+DP 51:49:05 N 000:36:47 W
+DP 51:48:10 N 000:41:55 W
+*
+* Luton CTA over Horton above DGA1
+AC D
+AN LONDON LUTON CTA
+AL 3500 FT AMSL
+AH 5500ALT
+DP 51:52:44 N 000:38:28 W
+DP 51:52:27 N 000:40:06 W
+DP 51:51:14 N 000:39:38 W
+DP 51:51:31 N 000:37:54 W
+*
+*   END: Luton CTA outside CRSA & DGA1
+*`;
+
+const asTemplateSeparator =
+`\n*   =======================================================\n`;
+
+const asTemplateSeparatorSmall =
+`\n*\n`;
+
+const asTemplateHeader =
+`\n*   =======================================================
+*   ===== START OF DHPC LETTER OF AGREEMENT ADDITIONS =====
+*   =======================================================\n`;
+
+const asTemplateFooter =
+`*   ====== END OF DHPC LETTER OF AGREEMENT ADDITIONS ======
+*   =======================================================`;
+
+// END: Airspace template definitions
+//
+// =======================================================
+//
+// BEGIN: Airspace to replace definitions
+
+const asMatchLutonCtaCheddington =
+`AC D
+AN LONDON LUTON CTA
+AL 2500ALT
+AH 5500ALT
+DP 51:48:10 N 000:41:55 W
+DP 51:51:50 N 000:43:36 W
+DP 51:52:44 N 000:38:28 W
+DP 51:49:05 N 000:36:47 W
+DP 51:48:10 N 000:41:55 W`;
+
+const asMatchLutonCtr =
+`AC D
+AN LONDON LUTON CTR
+AL SFC
+AH 3500ALT
+DP 51:52:44 N 000:38:28 W
+DP 51:55:11 N 000:24:26 W
+DP 51:57:43 N 000:21:45 W
+DP 51:58:57 N 000:14:34 W
+V D=+
+V X=51:52:29 N 000:22:06 W
+DB 51:58:57 N 000:14:34 W, 51:50:42 N 000:09:31 W
+DP 51:48:30 N 000:15:06 W
+DP 51:45:03 N 000:34:57 W
+DP 51:52:44 N 000:38:28 W`;
+
+const asToMatch = [asMatchLutonCtaCheddington, asMatchLutonCtr];
+
+// END: Airspace to replace definitions
+//
+// =======================================================
+</script>
+
+</body>
+</html>
