@@ -37,7 +37,7 @@
 <div class="container p-3" style="max-width: 600px;">
     <section class="container p-3">
         <h1>Dunstable HPC Airspace Generator</h1>
-        <p style="font-style: italic;">Last updated: 2023-11-24</p>
+        <p style="font-style: italic;">Last updated: 2023-11-24 • <a href="https://github.com/willricemusic/dunstable-airspace" target="_blank">View source code</a></p>
     </section>
 
     <section class="container p-3" style="background: lightyellow;">
@@ -70,6 +70,7 @@
                 <select class="form-select" name="dhpc-loa-class" id="dhpc-loa-class">
                     <option value="off">empty airspace</option>
                     <option value="GSEC">Gliding Sector (GSEC)</option>
+                    <option value="W">Only Gliders (W)</option>
                     <option value="G" selected>Class G</option>
                     <option value="D">Class D</option>
                 </select>
@@ -85,6 +86,7 @@
                     <option value="off">not included</option>
                     <option value="Q">Danger (Q)</option>
                     <option value="P" selected>Prohibited (P)</option>
+                    <option value="GP">Glider Prohibited (GP)</option>
                     <option value="B">Altitude Overlay (Class B)</option>
                 </select>
             </div>
@@ -93,7 +95,7 @@
                 <input type="text" value="100" class="form-control" id="zoo-altitude">
                 <span class="input-group-text">ft</span>
                 <select class="form-select" name="yellow-area-lower-altitude-reference" id="zoo-altitude-reference">
-                    <option value="AGL">AGL</option>
+                    <option value="AGL" selected>AGL</option>
                     <option value="AMSL">AMSL</option>
                 </select>
             </div>
@@ -106,7 +108,8 @@
             <div class="input-group mb-1">
                 <select class="form-select" name="green-area-class" id="green-area-class">
                     <option value="off">not included</option>
-                    <option value="P">Prohibited (P)</option>
+                    <option value="P" selected>Prohibited (P)</option>
+                    <option value="GP">Glider Prohibited (GP)</option>
                     <option value="Q">Danger (Q)</option>
                     <option value="R">Restricted (R)</option>
                     <option value="D">Class D</option>
@@ -123,7 +126,8 @@
             <div class="input-group mb-1">
                 <select class="form-select" name="orange-area-class" id="orange-area-class">
                     <option value="off">not included</option>
-                    <option value="P">Prohibited (P)</option>
+                    <option value="P" selected>Prohibited (P)</option>
+                    <option value="GP">Glider Prohibited (GP)</option>
                     <option value="Q">Danger (Q)</option>
                     <option value="R">Restricted (R)</option>
                     <option value="D">Class D</option>
@@ -142,7 +146,7 @@
                     <option value="off">not included</option>
                     <option value="Q">Danger (Q)</option>
                     <option value="R">Restricted (R)</option>
-                    <option value="SRZ">Special Rules Zone (SRZ)</option>
+                    <option value="SRZ" selected>Special Rules Zone (SRZ)</option>
                     <option value="GSEC">Gliding Sector (GSEC)</option>
                     <option value="G">Class G</option>
                     <option value="B">Altitude Overlay (Class B)</option> 
@@ -153,7 +157,7 @@
                 <input type="text" value="100" class="form-control" id="yellow-area-lower-altitude">
                 <span class="input-group-text">ft</span>
                 <select class="form-select" name="yellow-area-lower-altitude-reference" id="yellow-area-lower-altitude-reference">
-                    <option value="AGL">AGL</option>
+                    <option value="AGL" selected>AGL</option>
                     <option value="AMSL">AMSL</option>
                 </select>
             </div>
