@@ -37,7 +37,7 @@
 <div class="container p-3" style="max-width: 600px;">
     <section class="container p-3">
         <h1>Dunstable HPC Airspace Generator</h1>
-        <p style="font-style: italic;">Last updated: 2023-11-23</p>
+        <p style="font-style: italic;">Last updated: 2023-11-24</p>
     </section>
 
     <section class="container p-3" style="background: lightyellow;">
@@ -47,20 +47,20 @@
     </section>
 
     <section class="container p-3 mt-3">
-        <h3>2. Open an <a href="https://asselect.uk" target=blank>asselect.uk</a> airspace file: </h3>
-        <div style="font-style: italic;" class="mb-2">Leave both Dunstable Local Agreement checkboxes unticked in asselect.</div>
+        <h3>2. Open an <a href="https://airspace.xcontest.org" target="_blank">xcontest</a> or <a href="https://asselect.uk" target=blank>asselect</a> base file</h3>
+        <div style="font-style: italic;" class="mb-2">If using asselect, leave both Dunstable local agreement boxes unticked.<br>Choose OpenAir format.</div>
         <input type="file" class="form-control" id="upload">
     </section>
 
     <section id="options-container" class="container p-3">
-        <h3>3. Select options:</h3>
+        <h3>3. Select options</h3>
 
         <div class="vertical-input-group mb-4 mt-3">
             <div class="input-group">
                 <span class="input-group-text">Insert</span>
 
                 <select class="form-select" name="dhpc-loa-selection" id="dhpc-loa-selection">
-                    <option value="CRSA">CRSA</option>
+                    <option value="CRSA">CRSA only</option>
                     <option value="CRSA+DGA1">CRSA + DGA1</option>
                 </select>
             </div>
@@ -167,7 +167,7 @@
     <section class="container p-3" style="background: lightyellow">
         <h3>4. Download modified airspace file</h3>
 
-        <p><strong>This page is in beta. Please assume that the airspace file generated is wrong, corrupt, out of date, not what you were expecting, or contains mistakes. </strong>Check and double-check the resultant file using a text editor and your instrument, comparing with a known good reference and report all errors to <a href="https://t.me/willrice" target="blank">@willrice</a> on Telegram including details of the browser used and steps to recreate the issue.</p>
+        <p><strong>This page is in beta. Please assume that the airspace file generated is wrong, corrupt, out of date, not what you were expecting, or contains mistakes. </strong>Check and double-check the resultant file using a text editor (search for "DHPC" to find modifications made) and your instrument, comparing with a known good reference and report all errors to <a href="https://t.me/willrice" target="blank">@willrice</a> on Telegram including details of the browser used and steps to recreate the issue.</p>
         <p>It is the pilot's responsibility alone to ensure that their instrument configuration and knowledge will enable them to avoid controlled airspace at all times!</p>
         <p><strong>All responsibility and liability for any outcome relating to use of this website lies with the pilot alone.</strong></p>
 
@@ -187,29 +187,46 @@
 // BEGIN: File-chooser & download button
 
 var fileInput = document.getElementById('upload');
-var outputFileName = 'DHPC-LOA.txt';
+var outputFileNameBase = 'DHPC';
 var inputFileData = '';
 
 const openFile = () => {
     const selectedFile = fileInput.files[0];
-    inputFileName = selectedFile.name;
-    outputFileName = inputFileName.substring(0, inputFileName.lastIndexOf('.')) + '-DHPC-LOA.txt';
+    const inputFileName = selectedFile.name;
+    
 
     var fileReader = new FileReader();
+
     fileReader.onload = function(fileLoadedEvent){
+        const originalFileData = fileLoadedEvent.target.result;
+        inputFileData = originalFileData;
+        var match = true;
 
-        inputFileData = fileLoadedEvent.target.result;
-
-        var abort = false;
-
+        // comment out original Luton CTR & CTA-3 (if present in expected asselect.uk format)
         asToMatch.forEach(function (as) {
             const before = inputFileData;
             inputFileData = inputFileData.replace(as, commentOut(as));
-            if (inputFileData == before) {abort = true}; // no replacement performed - expected airspace definition is missing!
+            if (inputFileData == before) {match = false;} // no replacement performed - expected airspace definition is missing!
         });
 
-        if (abort) {abortLoadingFile();}
+        // comment out original Luton CTR & CTA-3 (if present in expected airspace.xcontest.org format)
+        if (!match) { // if asselect.uk mode missed any regex matches
 
+            inputFileData = originalFileData; // reset to originally loaded file
+            match = true; // reset match
+
+            inputFileData = inputFileData.replace(/\r\n/g, '\n'); // replace Windows style line endings from airspace.xcontest.org with POSIX line endings
+
+            xcontestToMatch.forEach(function (as) {
+                const before = inputFileData;
+                inputFileData = inputFileData.replace(as, commentOut(as));
+                if (inputFileData == before) {match = false;} // no replacement performed - expected airspace definition is missing!
+            });
+        }
+
+        if (!match) {abortLoadingFile();} // did not match all Luton CTA & CTR definitions in either mode (asselect / xcontest) - ABORT!
+
+        outputFileNameBase = inputFileName.substring(0, inputFileName.lastIndexOf('.'));
     };
 
     fileReader.readAsText(selectedFile, "UTF-8");
@@ -218,10 +235,8 @@ const openFile = () => {
 fileInput.addEventListener('change', openFile);
 
 function abortLoadingFile() {
-    outputFileName = 'DHPC-LOA.txt';
     inputFileData = '';
     fileInput.value = '';
-    // document.body.style.background = '#ffeeee';
     alert("The selected file did not contain Luton CTA & CTR airspace in the expected format. ABORTING!");
 }
 
@@ -253,6 +268,11 @@ const downloadFile = () => {
     airspaceData += getAirspaceZoo();
     airspaceData += getRemainingLutonAs();
     airspaceData += asTemplateFooter;
+
+    var outputFileName = outputFileNameBase;
+    outputFileName += '-';
+    outputFileName += loaSelection();
+    outputFileName += '.txt';
     download(airspaceData, 'text/plain', outputFileName);
 };
 
@@ -272,10 +292,6 @@ function download(content, mimeType, filename) {
 // =======================================================
 //
 // BEGIN: Airspace processor
-
-
-
-// -------------------------------------------------------
 
 function getRemainingLutonAs() {
     var remainingLutonAs = '';
@@ -401,12 +417,16 @@ function airspaceZoo(ac, ahAlt, ahRef) {
 
 // -------------------------------------------------------
 
+function loaSelection() {
+    return document.getElementById('dhpc-loa-selection').value;
+}
+
 function crsaEnabled() {
     return true;
 }
 
 function dga1Enabled() {
-    return document.getElementById('dhpc-loa-selection').value == 'CRSA+DGA1';
+    return loaSelection() == 'CRSA+DGA1';
 }
 
 function greenAreaEnabled() {
@@ -442,7 +462,7 @@ const asTemplateCrsa =
 AC <CLASS>
 AN CRSA
 AL SFC
-AH 1500 FT AMSL
+AH 1500ft AMSL
 DP 51:51:31 N  000:37:54 W
 DP 51:53:10 N  000:31:16 W
 DP 51:49:42 N  000:33:13 W
@@ -452,7 +472,7 @@ DP 51:51:31 N  000:37:54 W
 AC <CLASS>
 AN CRSA EXTENSION
 AL SFC
-AH 2500 FT AMSL
+AH 2500ft AMSL
 DP 51:52:44 N  000:38:28 W
 DP 51:53:50 N  000:32:12 W
 DP 51:53:10 N  000:31:16 W
@@ -469,7 +489,7 @@ const asTemplateDga1 =
 AC <CLASS>
 AN DGA1
 AL SFC
-AH 3500 FT AMSL
+AH 3500ft AMSL
 DP 51:52:27 N  000:40:06 W
 DP 51:55:11 N  000:24:26 W
 DP 51:52:40 N  000:27:04 W
@@ -494,7 +514,7 @@ const asTemplateLgcGreenArea =
 `AC <CLASS>
 AN LGC GREEN AREA
 AL SFC
-AH 2500 FT AMSL
+AH 2500ft AMSL
 DP 51:52:24 N  000:32:58 W
 DP 51:52:21 N  000:32:40 W
 DP 51:52:17 N  000:32:26 W
@@ -506,7 +526,7 @@ const asTemplateLgcOrangeArea =
 `AC P
 AN LGC HGPG EXCLUSION ZONE
 AL SFC
-AH 800 FT AMSL
+AH 800ft AMSL
 DP 51:52:21 N  000:32:26 W
 DP 51:52:17 N  000:32:26 W
 DP 51:52:21 N  000:32:40 W
@@ -515,8 +535,8 @@ DP 51:52:24 N  000:32:35 W`;
 const asTemplateLgcYellowArea =
 `AC <CLASS>
 AN LGC YELLOW AREA
-AL <ALTITUDE-LOW> FT <ALTITUDE-LOW-REFERENCE>
-AH 1300 FT AMSL
+AL <ALTITUDE-LOW>ft <ALTITUDE-LOW-REFERENCE>
+AH 1300ft AMSL
 DP 51:52:24 N  000:32:58 W
 DP 51:52:38 N  000:32:44 W
 DP 51:52:35 N  000:32:30 W
@@ -526,8 +546,8 @@ DP 51:52:21 N  000:32:40 W
 *
 AC <CLASS>
 AN LGC YELLOW AREA OVER BL
-AL <ALTITUDE-LOW> FT <ALTITUDE-LOW-REFERENCE>
-AH 1300 FT AMSL
+AL <ALTITUDE-LOW>ft <ALTITUDE-LOW-REFERENCE>
+AH 1300ft AMSL
 DP 51:52:33 N  000:32:32 W
 DP 51:52:30 N  000:32:25 W
 DP 51:52:29 N  000:32:26 W
@@ -537,8 +557,8 @@ DP 51:52:24 N  000:32:35 W
 *
 AC <CLASS>
 AN LGC YELLOW AREA OVER HGPG EXCLUSION
-AL 800 FT AMSL
-AH 1300 FT AMSL
+AL 800ft AMSL
+AH 1300ft AMSL
 DP 51:52:21 N  000:32:26 W
 DP 51:52:17 N  000:32:26 W
 DP 51:52:21 N  000:32:40 W
@@ -551,7 +571,7 @@ const asTemplateZoo =
 AC <CLASS>
 AN WHIPSNADE ZOO
 AL SFC
-AH <ALTITUDE-HIGH> FT <ALTITUDE-HIGH-REFERENCE>
+AH <ALTITUDE-HIGH>ft <ALTITUDE-HIGH-REFERENCE>
 DP 51:51:30 N  000:33:26 W
 DP 51:51:27 N  000:33:12 W
 DP 51:51:24 N  000:33:08 W
@@ -606,7 +626,7 @@ const asLutonCtrMinusCrsa =
 AC D
 AN LONDON LUTON CTR
 AL SFC
-AH 3500ALT
+AH 3500ft AMSL
 DP 51:55:11 N 000:24:26 W
 DP 51:57:43 N 000:21:45 W
 DP 51:58:57 N 000:14:34 W
@@ -623,8 +643,8 @@ DP 51:53:50 N 000:32:12 W
 * Luton CTR above CRSA
 AC D
 AN LONDON LUTON CTR
-AL 1500 FT AMSL
-AH 3500ALT
+AL 1500ft AMSL
+AH 3500ft AMSL
 DP 51:51:31 N  000:37:54 W
 DP 51:53:10 N  000:31:16 W
 DP 51:49:42 N  000:33:13 W
@@ -634,8 +654,8 @@ DP 51:51:31 N  000:37:54 W
 * Luton CTR above CRSA Extension
 AC D
 AN LONDON LUTON CTR
-AL 2500 FT AMSL
-AH 3500ALT
+AL 2500ft AMSL
+AH 3500ft AMSL
 DP 51:52:44 N  000:38:28 W
 DP 51:53:50 N  000:32:12 W
 DP 51:53:10 N  000:31:16 W
@@ -653,7 +673,7 @@ const asLutonCtrAndCtaMinusCrsaAndDga1 =
 AC D
 AN LONDON LUTON CTR
 AL SFC
-AH 3500ALT
+AH 3500ft AMSL
 DP 51:55:11 N 000:24:26 W
 DP 51:57:43 N 000:21:45 W
 DP 51:58:57 N 000:14:34 W
@@ -670,8 +690,8 @@ DP 51:52:40 N 000:27:04 W
 * Luton CTR over CRSA and outside DGA1
 AC D
 AN LONDON LUTON CTR
-AL 1500 FT AMSL
-AH 3500ALT
+AL 1500ft AMSL
+AH 3500ft AMSL
 DP 51:51:31 N  000:37:54 W
 DP 51:51:35 N  000:37:30 W
 DP 51:51:33 N  000:33:27 W
@@ -689,8 +709,8 @@ DP 51:51:31 N  000:37:54 W
 * Luton CTA over Cheddington outside DGA1
 AC D
 AN LONDON LUTON CTA
-AL 2500ALT
-AH 5500ALT
+AL 2500ft AMSL
+AH 5500ft AMSL
 DP 51:48:10 N 000:41:55 W
 DP 51:51:50 N 000:43:36 W
 DP 51:52:27 N 000:40:06 W
@@ -702,8 +722,8 @@ DP 51:48:10 N 000:41:55 W
 * Luton CTA over Horton above DGA1
 AC D
 AN LONDON LUTON CTA
-AL 3500 FT AMSL
-AH 5500ALT
+AL 3500ft AMSL
+AH 5500ft AMSL
 DP 51:52:44 N 000:38:28 W
 DP 51:52:27 N 000:40:06 W
 DP 51:51:14 N 000:39:38 W
@@ -731,7 +751,7 @@ const asTemplateFooter =
 //
 // =======================================================
 //
-// BEGIN: Airspace to replace definitions
+// BEGIN: Airspace to replace definitions (asselect)
 
 const asMatchLutonCtaCheddington =
 `AC D
@@ -762,9 +782,43 @@ DP 51:52:44 N 000:38:28 W`;
 
 const asToMatch = [asMatchLutonCtaCheddington, asMatchLutonCtr];
 
-// END: Airspace to replace definitions
+// END: Airspace to replace definitions (asselect)
 //
 // =======================================================
+//
+// BEGIN: Airspace to replace definitions (airspace.xcontest.org)
+
+const xcontestMatchLutonCtaCheddington =
+`AC D
+AN LONDON LUTON CTA-3
+AH 5500ft AMSL
+AL 2500ft AMSL
+DP 51:48:10.00 N 000:41:55.00 W
+DP 51:51:50.00 N 000:43:36.00 W
+DP 51:52:44.00 N 000:38:28.00 W
+DP 51:49:05.00 N 000:36:47.00 W`;
+
+const xcontestMatchLutonCtr = 
+`AC D
+AN LONDON LUTON CTR
+AH 3500ft AMSL
+AL GND
+DP 51:52:44.00 N 000:38:28.00 W
+DP 51:55:11.00 N 000:24:26.00 W
+DP 51:57:43.00 N 000:21:45.00 W
+DP 51:58:57.00 N 000:14:34.00 W
+V X=51:52:29.00 N 000:22:06.00 W
+V D=+
+DB 51:58:57.00 N 000:14:34.00 W, 51:50:42.00 N 000:09:31.00 W
+DP 51:48:30.00 N 000:15:06.00 W
+DP 51:45:03.00 N 000:34:57.00 W`;
+
+const xcontestToMatch = [xcontestMatchLutonCtaCheddington, xcontestMatchLutonCtr];
+
+// END: Airspace to replace definitions (airspace.xcontest.org)
+//
+// =======================================================
+
 </script>
 
 </body>
