@@ -37,7 +37,7 @@
 <div class="container p-3" style="max-width: 600px;">
     <section class="container p-3">
         <h1>Dunstable HPC Airspace Generator</h1>
-        <p style="font-style: italic;">Last updated: 2024-06-19<br><a href="https://github.com/willricemusic/dunstable-airspace" target="_blank">View source code</a></p>
+        <p style="font-style: italic;">Last updated: 2024-07-21<br><a href="https://github.com/willricemusic/dunstable-airspace" target="_blank">View source code</a></p>
     </section>
 
     <section class="container p-3" style="background: lightyellow;">
@@ -81,7 +81,7 @@
 
         <div class="vertical-input-group">
             <div class="input-group">
-                <span class="input-group-text" style="width:100%">Whipsnade Zoo</span>
+                <span class="input-group-text" style="width:100%">Whipsnade Zoo (No Landing)</span>
             </div>
             <div class="input-group">
                 <select class="form-select" name="zoo-class" id="zoo-class">
@@ -94,18 +94,18 @@
             </div>
             <div class="input-group mb-4">
                 <span class="input-group-text">from SFC to</span>
-                <input type="text" value="100" class="form-control" id="zoo-altitude">
+                <input type="text" value="1500" class="form-control" id="zoo-altitude">
                 <span class="input-group-text">ft</span>
                 <select class="form-select" name="yellow-area-lower-altitude-reference" id="zoo-altitude-reference">
-                    <option value="AGL" selected>AGL</option>
-                    <option value="AMSL">AMSL</option>
+                    <option value="AGL">AGL</option>
+                    <option value="AMSL" selected>AMSL</option>
                 </select>
             </div>
         </div>
 
         <div class="vertical-input-group">
             <div class="input-group">
-                <span class="input-group-text" style="background-color: #edfce9; width:100%">LGC main field ("Green Area")</span>
+                <span class="input-group-text" style="background-color: #edfce9; width:100%">LGC Main Field (Green Area) "No Entry <2500ft"</span>
             </div>
             <div class="input-group mb-1">
                 <select class="form-select" name="green-area-class" id="green-area-class">
@@ -123,7 +123,7 @@
 
         <div class="vertical-input-group">
             <div class="input-group">
-                <span class="input-group-text" style="background-color: #fcf2e9; width:100%">LGC HG/PG exclusion ("Orange Area")</span>
+                <span class="input-group-text" style="background-color: #fcf2e9; width:100%">LGC Landing Path (Orange Area) "Exclusion Zone"</span>
             </div>
             <div class="input-group mb-1">
                 <select class="form-select" name="orange-area-class" id="orange-area-class">
@@ -141,30 +141,37 @@
 
         <div class="vertical-input-group">
             <div class="input-group">
-                <span class="input-group-text" style="background-color: lightyellow; width:100%">LGC fields over BL ("Yellow Area")</span>
+                <span class="input-group-text" style="background-color: lightyellow; width:100%">Field Beyond BL (Yellow Area) "No Entry <1300ft"</span>
             </div>
-            <div class="input-group">
+            <div class="input-group mb-1">
                 <select class="form-select" name="yellow-area-class" id="yellow-area-class">
                     <option value="off">not included</option>
+                    <option value="P" selected>Prohibited (P)</option>
                     <option value="Q">Danger (Q)</option>
                     <option value="R">Restricted (R)</option>
-                    <option value="SRZ" selected>Special Rules Zone (SRZ)</option>
+                    <option value="SRZ">Special Rules Zone (SRZ)</option>
                     <option value="GSEC">Gliding Sector (GSEC)</option>
                     <option value="G">Class G</option>
+                    <option value="D">Class D</option>
                     <option value="B">Altitude Overlay (Class B)</option> 
                 </select>
+                <span class="input-group-text">SFC to 1300ft AMSL</span>
             </div>
+        </div>
+
+        <div class="vertical-input-group">
             <div class="input-group">
-                <span class="input-group-text">from</span>
-                <input type="text" value="100" class="form-control" id="yellow-area-lower-altitude">
-                <span class="input-group-text">ft</span>
-                <select class="form-select" name="yellow-area-lower-altitude-reference" id="yellow-area-lower-altitude-reference">
-                    <option value="AGL" selected>AGL</option>
-                    <option value="AMSL">AMSL</option>
-                </select>
+                <span class="input-group-text" style="background-color: lightyellow; width:100%">BL Area (Yellow Area) "Bottom Landings Only <1300ft"</span>
             </div>
             <div class="input-group mb-3">
-                <span class="input-group-text" style="width:100%">to 1300ft AMSL</span>
+                <select class="form-select" name="landing-area-class" id="landing-area-class">
+                    <option value="off">not included</option>
+                    <option value="GSEC">Gliding Sector (GSEC)</option>
+                    <option value="W">Only Gliders (W)</option>
+                    <option value="F" selected>Class F</option>
+                    <option value="G">Class G</option>
+                </select>
+                <span class="input-group-text">SFC to 1300ft AMSL</span>
             </div>
         </div>
 
@@ -360,6 +367,7 @@ function getAirspaceLgc() {
     as += getAirspaceGreenArea();
     as += getAirspaceOrangeArea();
     as += getAirspaceYellowArea();
+    as += getAirspaceLandingArea();
     as += asTemplateLgcEnd;
     as += asTemplateSeparator;
     return as;
@@ -392,16 +400,24 @@ function airspaceOrangeArea(ac) {
 function getAirspaceYellowArea() {
     if (!yellowAreaEnabled()) {return '';}
     const ac = document.getElementById('yellow-area-class').value;
-    const alAlt = document.getElementById('yellow-area-lower-altitude').value;
-    const alRef = document.getElementById('yellow-area-lower-altitude-reference').value;
-    return airspaceYellowArea(ac, alAlt, alRef) + asTemplateSeparatorSmall;
+    return airspaceYellowArea(ac) + asTemplateSeparatorSmall;
 }
 
-function airspaceYellowArea(ac, alAlt, alRef) {
+function airspaceYellowArea(ac) {
     newAs = asTemplateLgcYellowArea;
     newAs = newAs.replaceAll('<CLASS>', ac);
-    newAs = newAs.replaceAll('<ALTITUDE-LOW>', alAlt);
-    newAs = newAs.replaceAll('<ALTITUDE-LOW-REFERENCE>', alRef);
+    return newAs;
+}
+
+function getAirspaceLandingArea() {
+    if (!landingAreaEnabled()) {return '';}
+    const ac = document.getElementById('landing-area-class').value;
+    return airspaceLandingArea(ac) + asTemplateSeparatorSmall;
+}
+
+function airspaceLandingArea(ac) {
+    newAs = asTemplateLgcLandingArea;
+    newAs = newAs.replaceAll('<CLASS>', ac);
     return newAs;
 }
 
@@ -447,8 +463,12 @@ function yellowAreaEnabled() {
     return document.getElementById('yellow-area-class').value != 'off';
 }
 
+function landingAreaEnabled() {
+    return document.getElementById('landing-area-class').value != 'off';
+}
+
 function lgcEnabled() {
-    return greenAreaEnabled() || orangeAreaEnabled() || yellowAreaEnabled();
+    return greenAreaEnabled() || orangeAreaEnabled() || yellowAreaEnabled() || landingAreaEnabled();
 }
 
 function zooEnabled() {
@@ -518,7 +538,7 @@ const asTemplateLgcEnd =
 
 const asTemplateLgcGreenArea =
 `AC <CLASS>
-AN LGC GREEN AREA
+AN NO ENTRY <2500FT
 AL SFC
 AH 2500ft AMSL
 DP 51:52:24 N  000:32:58 W
@@ -530,7 +550,7 @@ DP 51:52:20 N  000:33:06 W`;
 
 const asTemplateLgcOrangeArea =
 `AC P
-AN LGC HGPG EXCLUSION ZONE
+AN EXCLUSION ZONE
 AL SFC
 AH 800ft AMSL
 DP 51:52:21 N  000:32:26 W
@@ -540,8 +560,8 @@ DP 51:52:24 N  000:32:35 W`;
 
 const asTemplateLgcYellowArea =
 `AC <CLASS>
-AN LGC YELLOW AREA
-AL <ALTITUDE-LOW>ft <ALTITUDE-LOW-REFERENCE>
+AN NO ENTRY <1300FT
+AL SFC
 AH 1300ft AMSL
 DP 51:52:24 N  000:32:58 W
 DP 51:52:38 N  000:32:44 W
@@ -551,18 +571,7 @@ DP 51:52:24 N  000:32:35 W
 DP 51:52:21 N  000:32:40 W
 *
 AC <CLASS>
-AN LGC YELLOW AREA OVER BL
-AL <ALTITUDE-LOW>ft <ALTITUDE-LOW-REFERENCE>
-AH 1300ft AMSL
-DP 51:52:33 N  000:32:32 W
-DP 51:52:30 N  000:32:25 W
-DP 51:52:29 N  000:32:26 W
-DP 51:52:28 N  000:32:24 W
-DP 51:52:21 N  000:32:26 W
-DP 51:52:24 N  000:32:35 W
-*
-AC <CLASS>
-AN LGC YELLOW AREA OVER HGPG EXCLUSION
+AN NO ENTRY <1300FT
 AL 800ft AMSL
 AH 1300ft AMSL
 DP 51:52:21 N  000:32:26 W
@@ -570,12 +579,24 @@ DP 51:52:17 N  000:32:26 W
 DP 51:52:21 N  000:32:40 W
 DP 51:52:24 N  000:32:35 W`;
 
+const asTemplateLgcLandingArea =
+`AC <CLASS>
+AN BOTTOM LANDINGS ONLY <1300FT
+AL SFC
+AH 1300ft AMSL
+DP 51:52:33 N  000:32:32 W
+DP 51:52:30 N  000:32:25 W
+DP 51:52:29 N  000:32:26 W
+DP 51:52:28 N  000:32:24 W
+DP 51:52:21 N  000:32:26 W
+DP 51:52:24 N  000:32:35 W`;
+
 const asTemplateZoo = 
 `*
 *   BEGIN: Whipsnade Zoo
 *
 AC <CLASS>
-AN WHIPSNADE ZOO
+AN WHIPSNADE ZOO (NO LANDING)
 AL SFC
 AH <ALTITUDE-HIGH>ft <ALTITUDE-HIGH-REFERENCE>
 DP 51:51:30 N  000:33:26 W
