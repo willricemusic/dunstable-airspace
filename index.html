@@ -105,7 +105,7 @@
 
         <div class="vertical-input-group">
             <div class="input-group">
-                <span class="input-group-text" style="background-color: #edfce9; width:100%">LGC Main Field (Green Area) "No Entry <2500ft"</span>
+                <span class="input-group-text" style="background-color: #edfce9; width:100%">LGC Main Field ("No Entry <2500ft")</span>
             </div>
             <div class="input-group mb-1">
                 <select class="form-select" name="green-area-class" id="green-area-class">
@@ -123,7 +123,7 @@
 
         <div class="vertical-input-group">
             <div class="input-group">
-                <span class="input-group-text" style="background-color: #fcf2e9; width:100%">LGC Landing Path (Orange Area) "Exclusion Zone"</span>
+                <span class="input-group-text" style="background-color: #fcf2e9; width:100%">LGC Critical Landing Path ("Exclusion Zone")</span>
             </div>
             <div class="input-group mb-1">
                 <select class="form-select" name="orange-area-class" id="orange-area-class">
@@ -141,9 +141,25 @@
 
         <div class="vertical-input-group">
             <div class="input-group">
-                <span class="input-group-text" style="background-color: lightyellow; width:100%">Field Beyond BL (Yellow Area) "No Entry <1300ft"</span>
+                <span class="input-group-text" style="background-color: lightyellow; width:100%">BL Area ("Bottom Landings Only <1300ft")</span>
             </div>
             <div class="input-group mb-1">
+                <select class="form-select" name="landing-area-class" id="landing-area-class">
+                    <option value="off">not included</option>
+                    <option value="GSEC">Gliding Sector (GSEC)</option>
+                    <option value="W">Only Gliders (W)</option>
+                    <option value="F" selected>Class F</option>
+                    <option value="G">Class G</option>
+                </select>
+                <span class="input-group-text">SFC to 1300ft AMSL</span>
+            </div>
+        </div>
+
+        <div class="vertical-input-group">
+            <div class="input-group">
+                <span class="input-group-text" style="background-color: lightyellow; width:100%">Field Beyond BL ("No Entry <1300ft")</span>
+            </div>
+            <div class="input-group mb-3">
                 <select class="form-select" name="yellow-area-class" id="yellow-area-class">
                     <option value="off">not included</option>
                     <option value="P" selected>Prohibited (P)</option>
@@ -154,22 +170,6 @@
                     <option value="G">Class G</option>
                     <option value="D">Class D</option>
                     <option value="B">Altitude Overlay (Class B)</option> 
-                </select>
-                <span class="input-group-text">SFC to 1300ft AMSL</span>
-            </div>
-        </div>
-
-        <div class="vertical-input-group">
-            <div class="input-group">
-                <span class="input-group-text" style="background-color: lightyellow; width:100%">BL Area (Yellow Area) "Bottom Landings Only <1300ft"</span>
-            </div>
-            <div class="input-group mb-3">
-                <select class="form-select" name="landing-area-class" id="landing-area-class">
-                    <option value="off">not included</option>
-                    <option value="GSEC">Gliding Sector (GSEC)</option>
-                    <option value="W">Only Gliders (W)</option>
-                    <option value="F" selected>Class F</option>
-                    <option value="G">Class G</option>
                 </select>
                 <span class="input-group-text">SFC to 1300ft AMSL</span>
             </div>
